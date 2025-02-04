@@ -2,6 +2,7 @@ package ru.bgpu.annotationlk;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.FieldAnnotationsScanner;
+import org.reflections.scanners.Scanners;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,7 +18,7 @@ public class AppConfigWorker {
 
     public static void configProcessing(String prefix, String filePropName) {
 
-        Reflections reflections = new Reflections(prefix,new FieldAnnotationsScanner());
+        Reflections reflections = new Reflections(prefix, Scanners.FieldsAnnotated);
 
         File prop = new File(filePropName);
         if(prop.isFile()) {
