@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,16 +35,37 @@ public class AppConfigWorker {
                                     field.getAnnotation(AppConfig.class).defValue()
                             );
                             Object targetValue = null;
+                            
+                            Class<?> type = field.getType ();
+                            if (type.isArray ())
+                            	type = type.getComponentType();
 
-                            if(field.getType().equals(String.class)) {
+                            if(type.equals(String.class)) {
                                 targetValue = value;
-                            } else if(field.getType().equals(Integer.class)) {
+                            } else if(type.equals(Integer.class)) {
                                 targetValue = Integer.valueOf(value);
-                            }
-
+                            } else if (type.equals (Float.class)) {
+                            	targetValue = Float.valueOf(value);
+                            } else if (type.equals (Double.class)) {
+                            	targetValue = Double.valueOf(value);
+                            } else if (type.equals (float.class)) {
+                            	targetValue = Float.parseFloat(value);
+                            } else if (type.equals (double.class)) {
+                            	targetValue = Double.parseDouble(value);
+                            } else if (type.equals (int.class)) {
+                            	targetValue = Integer.parseInt(value);
+                            } else return;
+                            
                             try {
                                 field.setAccessible(true);
-                                field.set(field.getDeclaringClass(), targetValue);
+                                if (field.getType ().isArray()) {
+                                	Object arr = Array.newInstance(type, 1);
+                                	Array.set(arr, 0, targetValue);
+                                	
+                                	field.set(field.getDeclaringClass(), arr);
+                                } else {
+                                	field.set(field.getDeclaringClass(), targetValue);
+                                }
                                 field.setAccessible(false);
                             } catch (IllegalAccessException e) {
                                 logger.log(
